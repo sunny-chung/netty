@@ -23,6 +23,8 @@
     <version>4.1.110.Final</version>
   </parent>
 
+  <groupId>io.github.sunny-chung</groupId>
+  <version>4.1.110.Final-patch1-SNAPSHOT</version>
   <artifactId>netty-codec</artifactId>
   <packaging>jar</packaging>
 
@@ -30,23 +32,25 @@
 
   <properties>
     <javaModuleName>io.netty.codec</javaModuleName>
+    <nettyGroupId>${project.parent.groupId}</nettyGroupId>
+    <nettyVersion>${project.parent.version}</nettyVersion>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>netty-common</artifactId>
-      <version>${project.version}</version>
+      <version>${nettyVersion}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>netty-buffer</artifactId>
-      <version>${project.version}</version>
+      <version>${nettyVersion}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>netty-transport</artifactId>
-      <version>${project.version}</version>
+      <version>${nettyVersion}</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
@@ -158,9 +162,9 @@
       <artifactId>gson</artifactId>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>netty-transport</artifactId>
-      <version>${project.version}</version>
+      <version>${nettyVersion}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>

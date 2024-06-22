@@ -23,6 +23,8 @@
     <version>4.1.110.Final</version>
   </parent>
 
+  <groupId>io.github.sunny-chung</groupId>
+  <version>4.1.110.Final-patch1-SNAPSHOT</version>
   <artifactId>netty-codec-http2</artifactId>
   <packaging>jar</packaging>
 
@@ -32,23 +34,25 @@
     <javaModuleName>io.netty.codec.http2</javaModuleName>
     <!-- Needed for SSL tests as these use the SelfSignedCertificate -->
     <argLine.java9.extras>--add-exports java.base/sun.security.x509=ALL-UNNAMED</argLine.java9.extras>
+    <nettyGroupId>${project.parent.groupId}</nettyGroupId>
+    <nettyVersion>${project.parent.version}</nettyVersion>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>netty-common</artifactId>
-      <version>${project.version}</version>
+      <version>${nettyVersion}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>netty-buffer</artifactId>
-      <version>${project.version}</version>
+      <version>${nettyVersion}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>netty-transport</artifactId>
-      <version>${project.version}</version>
+      <version>${nettyVersion}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -56,14 +60,14 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>netty-handler</artifactId>
-      <version>${project.version}</version>
+      <version>${nettyVersion}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>netty-codec-http</artifactId>
-      <version>${project.version}</version>
+      <version>${nettyVersion}</version>
     </dependency>
     <dependency>
       <groupId>com.jcraft</groupId>
@@ -80,9 +84,10 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>${tcnative.artifactId}</artifactId>
       <classifier>${tcnative.classifier}</classifier>
+      <version>${tcnative.version}</version>
       <scope>test</scope>
       <optional>true</optional>
     </dependency>
@@ -142,9 +147,9 @@
       <artifactId>gson</artifactId>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>netty-transport</artifactId>
-      <version>${project.version}</version>
+      <version>${nettyVersion}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>

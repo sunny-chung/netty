@@ -703,55 +703,57 @@
     <skipNativeImageTestsuite>true</skipNativeImageTestsuite>
     <skipShadingTestsuite>false</skipShadingTestsuite>
     <skipDeploy>false</skipDeploy>
+    <nettyGroupId>${project.groupId}</nettyGroupId>
+    <nettyVersion>${project.version}</nettyVersion>
   </properties>
 
   <modules>
-    <module>all</module>
-    <module>dev-tools</module>
-    <module>common</module>
-    <module>buffer</module>
+<!--    <module>all</module>-->
+<!--    <module>dev-tools</module>-->
+<!--    <module>common</module>-->
+<!--    <module>buffer</module>-->
     <module>codec</module>
-    <module>codec-dns</module>
-    <module>codec-haproxy</module>
-    <module>codec-http</module>
+<!--    <module>codec-dns</module>-->
+<!--    <module>codec-haproxy</module>-->
+<!--    <module>codec-http</module>-->
     <module>codec-http2</module>
-    <module>codec-memcache</module>
-    <module>codec-mqtt</module>
-    <module>codec-redis</module>
-    <module>codec-smtp</module>
-    <module>codec-socks</module>
-    <module>codec-stomp</module>
-    <module>codec-xml</module>
-    <module>resolver</module>
-    <module>resolver-dns</module>
-    <module>resolver-dns-classes-macos</module>
-    <module>resolver-dns-native-macos</module>
-    <module>transport</module>
-    <module>transport-native-unix-common-tests</module>
-    <module>transport-native-unix-common</module>
-    <module>transport-classes-epoll</module>
-    <module>transport-native-epoll</module>
-    <module>transport-classes-kqueue</module>
-    <module>transport-native-kqueue</module>
-    <module>transport-rxtx</module>
-    <module>transport-sctp</module>
-    <module>transport-udt</module>
-    <module>handler</module>
-    <module>handler-proxy</module>
-    <module>handler-ssl-ocsp</module>
-    <module>example</module>
-    <module>testsuite</module>
-    <module>testsuite-autobahn</module>
-    <module>testsuite-http2</module>
-    <module>testsuite-osgi</module>
-    <module>testsuite-shading</module>
-    <module>testsuite-native</module>
-    <module>testsuite-native-image</module>
-    <module>testsuite-native-image-client</module>
-    <module>testsuite-native-image-client-runtime-init</module>
-    <module>transport-blockhound-tests</module>
-    <module>microbench</module>
-    <module>bom</module>
+<!--    <module>codec-memcache</module>-->
+<!--    <module>codec-mqtt</module>-->
+<!--    <module>codec-redis</module>-->
+<!--    <module>codec-smtp</module>-->
+<!--    <module>codec-socks</module>-->
+<!--    <module>codec-stomp</module>-->
+<!--    <module>codec-xml</module>-->
+<!--    <module>resolver</module>-->
+<!--    <module>resolver-dns</module>-->
+<!--    <module>resolver-dns-classes-macos</module>-->
+<!--    <module>resolver-dns-native-macos</module>-->
+<!--    <module>transport</module>-->
+<!--    <module>transport-native-unix-common-tests</module>-->
+<!--    <module>transport-native-unix-common</module>-->
+<!--    <module>transport-classes-epoll</module>-->
+<!--    <module>transport-native-epoll</module>-->
+<!--    <module>transport-classes-kqueue</module>-->
+<!--    <module>transport-native-kqueue</module>-->
+<!--    <module>transport-rxtx</module>-->
+<!--    <module>transport-sctp</module>-->
+<!--    <module>transport-udt</module>-->
+<!--    <module>handler</module>-->
+<!--    <module>handler-proxy</module>-->
+<!--    <module>handler-ssl-ocsp</module>-->
+<!--    <module>example</module>-->
+<!--    <module>testsuite</module>-->
+<!--    <module>testsuite-autobahn</module>-->
+<!--    <module>testsuite-http2</module>-->
+<!--    <module>testsuite-osgi</module>-->
+<!--    <module>testsuite-shading</module>-->
+<!--    <module>testsuite-native</module>-->
+<!--    <module>testsuite-native-image</module>-->
+<!--    <module>testsuite-native-image-client</module>-->
+<!--    <module>testsuite-native-image-client-runtime-init</module>-->
+<!--    <module>transport-blockhound-tests</module>-->
+<!--    <module>microbench</module>-->
+<!--    <module>bom</module>-->
   </modules>
 
   <dependencyManagement>
@@ -765,9 +767,9 @@
       </dependency>
 
       <dependency>
-        <groupId>${project.groupId}</groupId>
+        <groupId>${nettyGroupId}</groupId>
         <artifactId>netty-dev-tools</artifactId>
-        <version>${project.version}</version>
+        <version>${nettyVersion}</version>
       </dependency>
 
       <!-- Needed for java11 and later as javax.activation is not part of the JDK anymore -->
@@ -814,14 +816,14 @@
 
       <!-- Our own Tomcat Native fork - completely optional for the native lib, used for accelerating SSL with OpenSSL. -->
       <dependency>
-        <groupId>${project.groupId}</groupId>
+        <groupId>${nettyGroupId}</groupId>
         <artifactId>netty-tcnative-classes</artifactId>
         <version>${tcnative.version}</version>
         <scope>compile</scope>
         <optional>true</optional>
       </dependency>
       <dependency>
-        <groupId>${project.groupId}</groupId>
+        <groupId>${nettyGroupId}</groupId>
         <artifactId>${tcnative.artifactId}</artifactId>
         <version>${tcnative.version}</version>
         <classifier>${tcnative.classifier}</classifier>
@@ -1058,7 +1060,7 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>${project.groupId}</groupId>
+        <groupId>${nettyGroupId}</groupId>
         <artifactId>netty-build-common</artifactId>
         <version>${netty.build.version}</version>
         <scope>test</scope>
@@ -1196,7 +1198,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${nettyGroupId}</groupId>
       <artifactId>netty-build-common</artifactId>
       <scope>test</scope>
     </dependency>
@@ -1545,7 +1547,7 @@
             <version>8.29</version>
           </dependency>
           <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${nettyGroupId}</groupId>
             <artifactId>netty-build-common</artifactId>
             <version>${netty.build.version}</version>
           </dependency>
@@ -1618,7 +1620,7 @@
             <logback.configurationFile>${logging.config}</logback.configurationFile>
             <logLevel>${logging.logLevel}</logLevel>
             <!-- Used by ChannelHandlerMetadataUtil to create the recommended directory layout for native-image metadata -->
-            <nativeImage.handlerMetadataGroupId>${project.groupId}</nativeImage.handlerMetadataGroupId>
+            <nativeImage.handlerMetadataGroupId>${nettyGroupId}</nativeImage.handlerMetadataGroupId>
             <nativeimage.handlerMetadataArtifactId>${project.artifactId}</nativeimage.handlerMetadataArtifactId>
           </systemPropertyVariables>
           <argLine>${argLine.common} ${argLine.printGC} ${argLine.alpnAgent} ${argLine.leak} ${argLine.coverage} ${argLine.noUnsafe} ${argLine.jni} ${argLine.java9} ${argLine.javaProperties} -Dio.netty.bootstrap.extensions=serviceload</argLine>
@@ -1652,7 +1654,7 @@
                 <supportedProjectType>bundle</supportedProjectType>
               </supportedProjectTypes>
               <instructions>
-                <Export-Package>${project.groupId}.*</Export-Package>
+                <Export-Package>${nettyGroupId}.*</Export-Package>
                 <!-- enforce JVM vendor package as optional -->
                 <Import-Package>sun.net.dns.*;resolution:=optional,sun.misc.*;resolution:=optional,sun.nio.ch;resolution:=optional,sun.security.*;resolution:=optional,org.eclipse.jetty.npn;version="[1,2)";resolution:=optional,org.eclipse.jetty.alpn;version="[1,2)";resolution:=optional,*</Import-Package>
                 <!-- override "internal" private package convention -->
@@ -1688,10 +1690,10 @@
             <manifestEntries>
               <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
               <Bundle-Name>${project.name}</Bundle-Name>
-              <Bundle-SymbolicName>${project.groupId}.${project.artifactId}.source</Bundle-SymbolicName>
+              <Bundle-SymbolicName>${nettyGroupId}.${project.artifactId}.source</Bundle-SymbolicName>
               <Bundle-Vendor>${project.organization.name}</Bundle-Vendor>
               <Bundle-Version>${parsedVersion.osgiVersion}</Bundle-Version>
-              <Eclipse-SourceBundle>${project.groupId}.${project.artifactId};version="${parsedVersion.osgiVersion}";roots:="."</Eclipse-SourceBundle>
+              <Eclipse-SourceBundle>${nettyGroupId}.${project.artifactId};version="${parsedVersion.osgiVersion}";roots:="."</Eclipse-SourceBundle>
             </manifestEntries>
           </archive>
         </configuration>
@@ -1815,12 +1817,12 @@
                 <property name="metaInfDir" value="${project.basedir}/src/main/resources/META-INF" />
                 -->
                 <property name="metaInfDir" value="${project.build.outputDirectory}/META-INF" />
-                <property name="versionPropFile" value="${metaInfDir}/${project.groupId}.versions.properties" />
+                <property name="versionPropFile" value="${metaInfDir}/${nettyGroupId}.versions.properties" />
                 <mkdir dir="${metaInfDir}" />
                 <delete file="${versionPropFile}" quiet="true" />
 
                 <propertyfile file="${versionPropFile}" comment="Generated by netty-parent/pom.xml">
-                  <entry key="${project.artifactId}.version" value="${project.version}" />
+                  <entry key="${project.artifactId}.version" value="${nettyVersion}" />
                   <entry key="${project.artifactId}.buildDate" type="date" value="now" pattern="yyyy-MM-dd HH:mm:ss Z" />
                   <entry key="${project.artifactId}.commitDate" value="${commitDate}" />
                   <entry key="${project.artifactId}.shortCommitHash" value="${shortCommitHash}" />
@@ -2113,7 +2115,7 @@
           <version>1.5</version>
           <configuration>
             <resourceBundles>
-              <resourceBundle>io.netty:netty-dev-tools:${project.version}</resourceBundle>
+              <resourceBundle>io.netty:netty-dev-tools:${nettyVersion}</resourceBundle>
             </resourceBundles>
             <outputDirectory>${netty.dev.tools.directory}</outputDirectory>
             <!-- don't include netty-dev-tools in artifacts -->
