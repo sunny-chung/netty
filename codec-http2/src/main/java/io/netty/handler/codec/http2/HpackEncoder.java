@@ -149,7 +149,7 @@ final class HpackEncoder {
             CharSequence name = header.getKey();
             CharSequence value = header.getValue();
             encodeHeader(out, name, value, sensitivityDetector.isSensitive(name, value),
-              HpackHeaderField.sizeOf(name, value));
+              HpackHeaderField.sizeOf(name, value), header);
         }
     }
 
@@ -158,11 +158,17 @@ final class HpackEncoder {
      * <p>
      * <strong>The given {@link CharSequence}s must be immutable!</strong>
      */
-    private void encodeHeader(ByteBuf out, CharSequence name, CharSequence value, boolean sensitive, long headerSize) {
+    private void encodeHeader(ByteBuf out, CharSequence name, CharSequence value, boolean sensitive, long headerSize,
+                              Map.Entry<CharSequence, CharSequence> headerObject) {
         // If the header value is sensitive then it must never be indexed
         if (sensitive) {
             int nameIndex = getNameIndex(name);
             encodeLiteral(out, name, value, IndexType.NEVER, nameIndex);
+            if (headerObject instanceof InspectedHttp2Headers.InspectedHttp2HeaderEntry) {
+                ((InspectedHttp2Headers.InspectedHttp2HeaderEntry) headerObject).setFormat(
+                        InspectedHttp2Headers.BinaryFormat.LITERAL_NEVER_INDEXED
+                );
+            }
             return;
         }
 
@@ -172,8 +178,19 @@ final class HpackEncoder {
             if (staticTableIndex == HpackStaticTable.NOT_FOUND) {
                 int nameIndex = HpackStaticTable.getIndex(name);
                 encodeLiteral(out, name, value, IndexType.NONE, nameIndex);
+                if (headerObject instanceof InspectedHttp2Headers.InspectedHttp2HeaderEntry) {
+                    ((InspectedHttp2Headers.InspectedHttp2HeaderEntry) headerObject).setFormat(
+                            InspectedHttp2Headers.BinaryFormat.LITERAL_WITHOUT_INDEXING
+                    );
+                }
             } else {
                 encodeInteger(out, 0x80, 7, staticTableIndex);
+                if (headerObject instanceof InspectedHttp2Headers.InspectedHttp2HeaderEntry) {
+                    ((InspectedHttp2Headers.InspectedHttp2HeaderEntry) headerObject).setFormat(
+                            InspectedHttp2Headers.BinaryFormat.INDEXED
+                    );
+                    ((InspectedHttp2Headers.InspectedHttp2HeaderEntry) headerObject).setIndex(staticTableIndex);
+                }
             }
             return;
         }
@@ -182,50 +199,82 @@ final class HpackEncoder {
         if (headerSize > maxHeaderTableSize) {
             int nameIndex = getNameIndex(name);
             encodeLiteral(out, name, value, IndexType.NONE, nameIndex);
+            if (headerObject instanceof InspectedHttp2Headers.InspectedHttp2HeaderEntry) {
+                ((InspectedHttp2Headers.InspectedHttp2HeaderEntry) headerObject).setFormat(
+                        InspectedHttp2Headers.BinaryFormat.LITERAL_WITHOUT_INDEXING
+                );
+            }
             return;
         }
 
         int nameHash = AsciiString.hashCode(name);
         int valueHash = AsciiString.hashCode(value);
         NameValueEntry headerField = getEntryInsensitive(name, nameHash, value, valueHash);
+        InspectedHttp2Headers.BinaryFormat headerFormat;
+        Integer headerIndex;
         if (headerField != null) {
             // Section 6.1. Indexed Header Field Representation
-            encodeInteger(out, 0x80, 7, getIndexPlusOffset(headerField.counter));
+            headerIndex = getIndexPlusOffset(headerField.counter);
+            encodeInteger(out, 0x80, 7, headerIndex);
+            headerFormat = InspectedHttp2Headers.BinaryFormat.INDEXED;
         } else {
             int staticTableIndex = HpackStaticTable.getIndexInsensitive(name, value);
             if (staticTableIndex != HpackStaticTable.NOT_FOUND) {
                 // Section 6.1. Indexed Header Field Representation
-                encodeInteger(out, 0x80, 7, staticTableIndex);
+                headerIndex = staticTableIndex;
+                encodeInteger(out, 0x80, 7, headerIndex);
+                headerFormat = InspectedHttp2Headers.BinaryFormat.INDEXED;
             } else {
                 ensureCapacity(headerSize);
-                encodeAndAddEntries(out, name, nameHash, value, valueHash);
+                headerIndex = encodeAndAddEntries(out, name, nameHash, value, valueHash);
+                headerFormat = InspectedHttp2Headers.BinaryFormat.LITERAL_WITH_INDEXING;
                 size += headerSize;
             }
         }
+
+        if (headerObject instanceof InspectedHttp2Headers.InspectedHttp2HeaderEntry) {
+            ((InspectedHttp2Headers.InspectedHttp2HeaderEntry) headerObject).setFormat(headerFormat);
+            ((InspectedHttp2Headers.InspectedHttp2HeaderEntry) headerObject).setIndex(headerIndex);
+        }
     }
 
-    private void encodeAndAddEntries(ByteBuf out, CharSequence name, int nameHash, CharSequence value, int valueHash) {
+    /**
+     *
+     * @param out
+     * @param name
+     * @param nameHash
+     * @param value
+     * @param valueHash
+     * @return Index of header. Either null (new index) or > 0.
+     */
+    private Integer encodeAndAddEntries(ByteBuf out, CharSequence name, int nameHash, CharSequence value,
+                                        int valueHash) {
         int staticTableIndex = HpackStaticTable.getIndex(name);
         int nextCounter = latestCounter() - 1;
+        Integer headerIndex;
         if (staticTableIndex == HpackStaticTable.NOT_FOUND) {
             NameEntry e = getEntry(name, nameHash);
             if (e == null) {
+                headerIndex = null;
                 encodeLiteral(out, name, value, IndexType.INCREMENTAL, NOT_FOUND);
                 addNameEntry(name, nameHash, nextCounter);
                 addNameValueEntry(name, value, nameHash, valueHash, nextCounter);
             } else {
-                encodeLiteral(out, name, value, IndexType.INCREMENTAL, getIndexPlusOffset(e.counter));
+                headerIndex = getIndexPlusOffset(e.counter);
+                encodeLiteral(out, name, value, IndexType.INCREMENTAL, headerIndex);
                 addNameValueEntry(e.name, value, nameHash, valueHash, nextCounter);
 
                 // The name entry should always point to the latest counter.
                 e.counter = nextCounter;
             }
         } else {
+            headerIndex = staticTableIndex;
             encodeLiteral(out, name, value, IndexType.INCREMENTAL, staticTableIndex);
             // use the name from the static table to optimize memory usage.
             addNameValueEntry(
               HpackStaticTable.getEntry(staticTableIndex).name, value, nameHash, valueHash, nextCounter);
         }
+        return headerIndex;
     }
 
     /**

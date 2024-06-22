@@ -128,7 +128,7 @@ final class HpackDecoder {
                 streamId, headers, maxHeaderListSize, validateHeaders);
         // Check for dynamic table size updates, which must occur at the beginning:
         // https://www.rfc-editor.org/rfc/rfc7541.html#section-4.2
-        decodeDynamicTableSizeUpdates(in);
+        decodeDynamicTableSizeUpdates(in, sink);
         decode(in, sink);
 
         // Now that we've read all of our headers we can perform the validation steps. We must
@@ -136,16 +136,20 @@ final class HpackDecoder {
         sink.finish();
     }
 
-    private void decodeDynamicTableSizeUpdates(ByteBuf in) throws Http2Exception {
+    private void decodeDynamicTableSizeUpdates(ByteBuf in, Http2HeadersSink sink) throws Http2Exception {
         byte b;
         while (in.isReadable() && ((b = in.getByte(in.readerIndex())) & 0x20) == 0x20 && ((b & 0xC0) == 0x00)) {
             in.readByte();
             int index = b & 0x1F;
+            long newSize;
             if (index == 0x1F) {
-                setDynamicTableSize(decodeULE128(in, (long) index));
+                newSize = decodeULE128(in, (long) index);
             } else {
-                setDynamicTableSize(index);
+                newSize = index;
             }
+            setDynamicTableSize(newSize);
+            sink.appendPseudoHeader(new AsciiString(InspectedHttp2Headers.PSEUDO_HEADER_KEY_DYNAMIC_TABLE_SIZE_UPDATE),
+                    new AsciiString("" + newSize));
         }
     }
 
@@ -178,7 +182,10 @@ final class HpackDecoder {
                                 HpackHeaderField indexedHeader = getIndexedHeader(index);
                                 sink.appendToHeaderList(
                                         (AsciiString) indexedHeader.name,
-                                        (AsciiString) indexedHeader.value);
+                                        (AsciiString) indexedHeader.value,
+                                        InspectedHttp2Headers.BinaryFormat.INDEXED,
+                                        index
+                                );
                         }
                     } else if ((b & 0x40) == 0x40) {
                         // Literal Header Field with Incremental Indexing
@@ -226,7 +233,10 @@ final class HpackDecoder {
                     HpackHeaderField indexedHeader = getIndexedHeader(decodeULE128(in, index));
                     sink.appendToHeaderList(
                             (AsciiString) indexedHeader.name,
-                            (AsciiString) indexedHeader.value);
+                            (AsciiString) indexedHeader.value,
+                            InspectedHttp2Headers.BinaryFormat.INDEXED,
+                            index
+                    );
                     state = READ_HEADER_REPRESENTATION;
                     break;
 
@@ -276,7 +286,7 @@ final class HpackDecoder {
                             state = READ_LITERAL_HEADER_VALUE_LENGTH;
                             break;
                         case 0:
-                            insertHeader(sink, name, EMPTY_STRING, indexType);
+                            insertHeader(sink, name, EMPTY_STRING, indexType, index);
                             state = READ_HEADER_REPRESENTATION;
                             break;
                         default:
@@ -300,7 +310,7 @@ final class HpackDecoder {
                     }
 
                     AsciiString value = readStringLiteral(in, valueLength, huffmanEncoded);
-                    insertHeader(sink, name, value, indexType);
+                    insertHeader(sink, name, value, indexType, index);
                     state = READ_HEADER_REPRESENTATION;
                     break;
 
@@ -430,8 +440,26 @@ final class HpackDecoder {
         throw INDEX_HEADER_ILLEGAL_INDEX_VALUE;
     }
 
-    private void insertHeader(Http2HeadersSink sink, AsciiString name, AsciiString value, IndexType indexType) {
-        sink.appendToHeaderList(name, value);
+    private void insertHeader(Http2HeadersSink sink, AsciiString name, AsciiString value, IndexType indexType,
+                              Integer headerIndex) {
+        InspectedHttp2Headers.BinaryFormat format;
+        Integer index = null;
+        switch (indexType) {
+            case INCREMENTAL:
+                format = InspectedHttp2Headers.BinaryFormat.LITERAL_WITH_INDEXING;
+                index = headerIndex;
+                break;
+            case NONE:
+                format = InspectedHttp2Headers.BinaryFormat.LITERAL_WITHOUT_INDEXING;
+                break;
+            case NEVER:
+                format = InspectedHttp2Headers.BinaryFormat.LITERAL_NEVER_INDEXED;
+                break;
+            default:
+                format = InspectedHttp2Headers.BinaryFormat.OTHER;
+                break;
+        }
+        sink.appendToHeaderList(name, value, format, index);
 
         switch (indexType) {
             case NONE:
@@ -546,7 +574,14 @@ final class HpackDecoder {
             }
         }
 
-        void appendToHeaderList(AsciiString name, AsciiString value) {
+        void appendPseudoHeader(AsciiString name, AsciiString value) {
+            if (headers instanceof InspectedHttp2Headers) {
+                ((InspectedHttp2Headers) headers).add(name, value, InspectedHttp2Headers.BinaryFormat.OTHER, null);
+            }
+        }
+
+        void appendToHeaderList(AsciiString name, AsciiString value, InspectedHttp2Headers.BinaryFormat format,
+                                Integer headerIndex) {
             headersLength += HpackHeaderField.sizeOf(name, value);
             exceededMaxLength |= headersLength > maxHeaderListSize;
 
@@ -556,7 +591,11 @@ final class HpackDecoder {
             }
 
             try {
-                headers.add(name, value);
+                if (headers instanceof InspectedHttp2Headers) {
+                    ((InspectedHttp2Headers) headers).add(name, value, format, headerIndex);
+                } else {
+                    headers.add(name, value);
+                }
                 if (validateHeaders) {
                     previousType = validateHeader(streamId, name, value, previousType);
                 }

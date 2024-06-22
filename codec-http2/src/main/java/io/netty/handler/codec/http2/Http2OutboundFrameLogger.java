@@ -45,18 +45,24 @@ public class Http2OutboundFrameLogger implements Http2FrameWriter {
     @Override
     public ChannelFuture writeHeaders(ChannelHandlerContext ctx, int streamId,
             Http2Headers headers, int padding, boolean endStream, ChannelPromise promise) {
-        logger.logHeaders(OUTBOUND, ctx, streamId, headers, padding, endStream);
-        return writer.writeHeaders(ctx, streamId, headers, padding, endStream, promise);
+        // let `writer` modifies inspectedHeaders before logging
+        InspectedHttp2Headers inspectedHeaders = new InspectedHttp2Headers(headers);
+        ChannelFuture future = writer.writeHeaders(ctx, streamId, inspectedHeaders, padding, endStream, promise);
+        logger.logHeaders(OUTBOUND, ctx, streamId, inspectedHeaders, padding, endStream);
+        return future;
     }
 
     @Override
     public ChannelFuture writeHeaders(ChannelHandlerContext ctx, int streamId,
             Http2Headers headers, int streamDependency, short weight, boolean exclusive,
             int padding, boolean endStream, ChannelPromise promise) {
-        logger.logHeaders(OUTBOUND, ctx, streamId, headers, streamDependency, weight, exclusive,
-                padding, endStream);
-        return writer.writeHeaders(ctx, streamId, headers, streamDependency, weight,
+        // let `writer` modifies inspectedHeaders before logging
+        InspectedHttp2Headers inspectedHeaders = new InspectedHttp2Headers(headers);
+        ChannelFuture future = writer.writeHeaders(ctx, streamId, inspectedHeaders, streamDependency, weight,
                 exclusive, padding, endStream, promise);
+        logger.logHeaders(OUTBOUND, ctx, streamId, inspectedHeaders, streamDependency, weight, exclusive,
+                padding, endStream);
+        return future;
     }
 
     @Override

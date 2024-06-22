@@ -46,15 +46,15 @@ public class DefaultHeaders<K, V, T extends Headers<K, V, T>> implements Headers
      */
     static final int HASH_CODE_SEED = 0xc2b2ae35;
 
-    private final HeaderEntry<K, V>[] entries;
+    protected final HeaderEntry<K, V>[] entries;
     protected final HeaderEntry<K, V> head;
 
     private final byte hashMask;
     private final ValueConverter<V> valueConverter;
     private final NameValidator<K> nameValidator;
     private final ValueValidator<V> valueValidator;
-    private final HashingStrategy<K> hashingStrategy;
-    int size;
+    protected final HashingStrategy<K> hashingStrategy;
+    protected int size;
 
     public interface NameValidator<K> {
         /**
@@ -1036,7 +1036,7 @@ public class DefaultHeaders<K, V, T extends Headers<K, V, T>> implements Headers
         return valueValidator;
     }
 
-    private int index(int hash) {
+    protected int index(int hash) {
         return hash & hashMask;
     }
 

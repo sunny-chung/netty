@@ -270,7 +270,7 @@ public class DefaultHttp2Headers
         return new Http2HeaderEntry(h, name, value, next);
     }
 
-    private final class Http2HeaderEntry extends HeaderEntry<CharSequence, CharSequence> {
+    protected class Http2HeaderEntry extends HeaderEntry<CharSequence, CharSequence> {
         Http2HeaderEntry(int hash, CharSequence key, CharSequence value,
                 HeaderEntry<CharSequence, CharSequence> next) {
             super(hash, key);

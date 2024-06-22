@@ -99,6 +99,7 @@ public abstract class AbstractHttp2ConnectionHandlerBuilder<T extends Http2Conne
     // The properties that are:
     // * mutually exclusive against codec() and
     // * OK to use with server() and connection()
+    private Boolean inspectHeaders;
     private Boolean validateHeaders;
     private Http2FrameLogger frameLogger;
     private SensitivityDetector headerSensitivityDetector;
@@ -290,6 +291,15 @@ public abstract class AbstractHttp2ConnectionHandlerBuilder<T extends Http2Conne
     protected B validateHeaders(boolean validateHeaders) {
         enforceNonCodecConstraints("validateHeaders");
         this.validateHeaders = validateHeaders;
+        return self();
+    }
+
+    protected boolean isInspectHeaders() {
+        return inspectHeaders != null ? inspectHeaders : false;
+    }
+
+    protected B inspectHeaders(boolean inspectHeaders) {
+        this.inspectHeaders = inspectHeaders;
         return self();
     }
 
@@ -553,9 +563,17 @@ public abstract class AbstractHttp2ConnectionHandlerBuilder<T extends Http2Conne
 
     private T buildFromConnection(Http2Connection connection) {
         Long maxHeaderListSize = initialSettings.maxHeaderListSize();
-        Http2FrameReader reader = new DefaultHttp2FrameReader(new DefaultHttp2HeadersDecoder(isValidateHeaders(),
-                maxHeaderListSize == null ? DEFAULT_HEADER_LIST_SIZE : maxHeaderListSize,
-                /* initialHuffmanDecodeCapacity= */ -1));
+        Http2HeadersDecoder headersDecoder;
+        if (isInspectHeaders()) {
+            headersDecoder = new InspectedHttp2HeadersDecoder(isValidateHeaders(),
+                    maxHeaderListSize == null ? DEFAULT_HEADER_LIST_SIZE : maxHeaderListSize,
+                    /* initialHuffmanDecodeCapacity= */ -1);
+        } else {
+            headersDecoder = new DefaultHttp2HeadersDecoder(isValidateHeaders(),
+                    maxHeaderListSize == null ? DEFAULT_HEADER_LIST_SIZE : maxHeaderListSize,
+                    /* initialHuffmanDecodeCapacity= */ -1);
+        }
+        Http2FrameReader reader = new DefaultHttp2FrameReader(headersDecoder);
         Http2FrameWriter writer = encoderIgnoreMaxHeaderListSize == null ?
                 new DefaultHttp2FrameWriter(headerSensitivityDetector()) :
                 new DefaultHttp2FrameWriter(headerSensitivityDetector(), encoderIgnoreMaxHeaderListSize);

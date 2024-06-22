@@ -110,6 +110,16 @@ public class Http2FrameCodecBuilder extends
     }
 
     @Override
+    public boolean isInspectHeaders() {
+        return super.isInspectHeaders();
+    }
+
+    @Override
+    public Http2FrameCodecBuilder inspectHeaders(boolean inspectHeaders) {
+        return super.inspectHeaders(inspectHeaders);
+    }
+
+    @Override
     public Http2FrameLogger frameLogger() {
         return super.frameLogger();
     }
