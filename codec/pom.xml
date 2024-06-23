@@ -34,6 +34,7 @@
     <javaModuleName>io.netty.codec</javaModuleName>
     <nettyGroupId>${project.parent.groupId}</nettyGroupId>
     <nettyVersion>${project.parent.version}</nettyVersion>
+    <skipDeploy>false</skipDeploy>
   </properties>
 
   <dependencies>

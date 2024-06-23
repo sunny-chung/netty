@@ -36,6 +36,7 @@
     <argLine.java9.extras>--add-exports java.base/sun.security.x509=ALL-UNNAMED</argLine.java9.extras>
     <nettyGroupId>${project.parent.groupId}</nettyGroupId>
     <nettyVersion>${project.parent.version}</nettyVersion>
+    <skipDeploy>false</skipDeploy>
   </properties>
 
   <dependencies>
