@@ -24,7 +24,7 @@
   </parent>
 
   <groupId>io.github.sunny-chung</groupId>
-  <version>4.1.110.Final-patch1-SNAPSHOT</version>
+  <version>4.1.110.Final-patch1</version>
   <artifactId>netty-codec</artifactId>
   <packaging>jar</packaging>
 
